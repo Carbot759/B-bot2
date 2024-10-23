@@ -1,0 +1,924 @@
+<html><head><base href="https://websim.ai/robot/">
+<style>
+body {
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.robot-face {
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+    position: absolute;
+    transition: all 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+    cursor: move;
+}
+
+.robot-face.powered-off {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+
+.robot-face.powered-off .eye {
+    box-shadow: none;
+}
+
+.robot-face.powered-off .mouth {
+    box-shadow: none;
+}
+
+.robot-face.powered-off .pupil {
+    animation: none !important;
+    transform: translate(0, 0) !important;
+}
+
+.robot-face.powered-off .speaker-bar {
+    animation: none !important;
+    height: 15px !important;
+}
+
+.eye-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    gap: 60px;
+}
+
+.eye {
+    width: 150px;
+    height: 150px;
+    background: #000;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 8px solid #444;
+    box-shadow: 0 0 30px var(--robot-color, #00f5ff);
+}
+
+.pupil {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    background: var(--robot-color, #00f5ff);
+    border-radius: 50%;
+    top: 37.5px;
+    left: 37.5px;
+    animation: lookAround 4s ease-in-out infinite;
+}
+
+.mouth {
+    width: 375px;
+    height: 60px;
+    background: #444;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid #666;
+    box-shadow: 0 0 25px var(--robot-color, #00f5ff);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mouth.open {
+    height: 350px;
+    background: #333;
+    overflow-y: auto;
+}
+
+.mouth:hover {
+    border-color: var(--robot-color, #00f5ff);
+}
+
+.speaker {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px;
+    height: 100%;
+}
+
+.speaker-bar {
+    width: 15px;
+    height: 45px;
+    background: var(--robot-color, #00f5ff);
+    animation: speakPulse 0.5s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+.menu {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 0 10px 10px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.menu-title {
+    color: var(--robot-color, #00f5ff);
+    font-family: 'Arial', sans-serif;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--robot-color, #00f5ff);
+}
+
+.menu-subtitle {
+    color: var(--robot-color, #00f5ff);
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    margin-top: -15px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px var(--robot-color, #00f5ff);
+    opacity: 0.8;
+}
+
+.mouth.open .menu {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #fff;
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+}
+
+.toggle {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: #666;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle.active {
+    background: var(--robot-color, #00f5ff);
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle.active .toggle-slider {
+    transform: translateX(30px);
+}
+
+.color-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 15px;
+    justify-content: center;
+}
+
+.color-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px currentColor;
+}
+
+.color-option.active {
+    border-color: white;
+    transform: scale(1.1);
+}
+
+.exploring .robot-face {
+    transition: none;
+}
+
+@keyframes lookAround {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(20px, -20px); }
+    50% { transform: translate(-20px, 20px); }
+    75% { transform: translate(20px, 20px); }
+}
+
+@keyframes speakPulse {
+    0%, 100% { 
+        height: 45px;
+    }
+    50% { 
+        height: 15px;
+    }
+}
+
+@keyframes blink {
+    0%, 95%, 100% { transform: scaleY(1); }
+    97% { transform: scaleY(0.1); }
+}
+
+.eye {
+    animation: blink 4s infinite;
+}
+
+.eye.hit {
+    background: #ff0000;
+    animation: none !important;
+    transition: all 0.2s ease;
+}
+
+.eye.hit .pupil {
+    width: 120px;
+    height: 120px;
+    top: 15px;
+    left: 15px;
+    background: #ff0000;
+    animation: none !important;
+    transition: all 0.2s ease;
+}
+
+.explosion {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    animation: explode 0.5s ease-out forwards;
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.combat-mode {
+    cursor: none;
+}
+
+.crosshair {
+    position: fixed;
+    pointer-events: none;
+    width: 40px;
+    height: 40px;
+    display: none;
+    z-index: 1000;
+}
+
+.crosshair.active {
+    display: block;
+}
+
+.crosshair::before,
+.crosshair::after {
+    content: '';
+    position: absolute;
+    background: #ff0000;
+}
+
+.crosshair::before {
+    left: 50%;
+    width: 2px;
+    height: 100%;
+    transform: translateX(-50%);
+}
+
+.crosshair::after {
+    top: 50%;
+    height: 2px;
+    width: 100%;
+    transform: translateY(-50%);
+}
+
+@media screen and (max-width: 768px) {
+    .robot-face {
+        transform: scale(0.7);
+    }
+    
+    .mouth.open {
+        height: 350px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .robot-face {
+        transform: scale(0.5);
+    }
+    
+    .mouth.open {
+        height: 300px;
+    }
+    
+    .color-options {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .menu {
+        padding: 0 10px 10px;
+    }
+    
+    .menu-title {
+        font-size: 20px;
+    }
+    
+    .menu-subtitle {
+        font-size: 14px;
+    }
+    
+    .toggle-container {
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 320px) {
+    .robot-face {
+        transform: scale(0.4);
+    }
+}
+
+.eye, .mouth {
+    transition: box-shadow 0.1s ease;
+}
+
+.speaker-bar {
+    transition: height 0.1s ease;
+}
+</style>
+</head>
+<body>
+<div class="crosshair"></div>
+<div class="robot-face">
+    <div class="eye-container">
+        <div class="eye">
+            <div class="pupil"></div>
+        </div>
+        <div class="eye">
+            <div class="pupil"></div>
+        </div>
+    </div>
+    <div class="mouth">
+        <div class="speaker">
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+            <div class="speaker-bar"></div>
+        </div>
+        <div class="menu">
+            <div class="menu-title">B-BOT</div>
+            <div class="menu-subtitle">Control Panel</div>
+            <div class="toggle-container">
+                <span>Power</span>
+                <div class="toggle active" id="power-toggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <span>Follow Mouse</span>
+                <div class="toggle" id="mouse-toggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <span>Explore Screen</span>
+                <div class="toggle" id="explore-toggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <span>Voice Mode</span>
+                <div class="toggle" id="voice-toggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <span>Music Mode</span>
+                <div class="toggle" id="music-toggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <span>Change Color</span>
+                <div class="color-options">
+                    <div class="color-option active" style="background: #00f5ff" data-color="#00f5ff"></div>
+                    <div class="color-option" style="background: #ff0055" data-color="#ff0055"></div>
+                    <div class="color-option" style="background: #00ff00" data-color="#00ff00"></div>
+                    <div class="color-option" style="background: #ff00ff" data-color="#ff00ff"></div>
+                    <div class="color-option" style="background: #ffff00" data-color="#ffff00"></div>
+                    <div class="color-option" style="background: #ff5500" data-color="#ff5500"></div>
+                    <div class="color-option" style="background: #00ffff" data-color="#00ffff"></div>
+                    <div class="color-option" style="background: #ffffff" data-color="#ffffff"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let mouseFollowEnabled = false;
+let exploringEnabled = false;
+let voiceEnabled = false;
+let recognition = null;
+let isDragging = false;
+let dragOffset = { x: 0, y: 0 };
+let combatMode = false;
+let isPowered = true;
+const crosshair = document.querySelector('.crosshair');
+const synth = window.speechSynthesis;
+
+// Add speak function
+function speak(text) {
+    if (!isPowered) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.pitch = 1.2;
+    utterance.rate = 0.9;
+    synth.speak(utterance);
+}
+
+// Color changing functionality
+document.querySelectorAll('.color-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        // Remove active class from all options
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+        // Add active class to clicked option
+        option.classList.add('active');
+        // Set the new color
+        document.documentElement.style.setProperty('--robot-color', option.dataset.color);
+        e.stopPropagation();
+    });
+});
+
+// Speaker bars animation
+document.querySelectorAll('.speaker-bar').forEach((bar, index) => {
+    bar.style.animation = `speakPulse ${0.3 + Math.random() * 0.4}s ease-in-out infinite`;
+    bar.style.animationDelay = `${index * 0.1}s`;
+});
+
+// Initialize greeting
+setTimeout(() => {
+    speak("Hello, I am Blue Bot, but you can call me B Bot");
+}, 1000);
+
+// Toggle mouth open/close
+document.querySelector('.mouth').addEventListener('click', (e) => {
+    const mouth = document.querySelector('.mouth');
+    mouth.classList.toggle('open');
+    if (mouth.classList.contains('open')) {
+        const speakerBars = document.querySelectorAll('.speaker-bar');
+        speakerBars.forEach(bar => {
+            bar.style.animation = 'none';
+        });
+    } else {
+        const speakerBars = document.querySelectorAll('.speaker-bar');
+        speakerBars.forEach((bar, index) => {
+            bar.style.animation = `speakPulse ${0.3 + Math.random() * 0.4}s ease-in-out infinite`;
+            bar.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+    e.stopPropagation();
+});
+
+// Close mouth when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.mouth')) {
+        const mouth = document.querySelector('.mouth');
+        mouth.classList.remove('open');
+        const speakerBars = document.querySelectorAll('.speaker-bar');
+        speakerBars.forEach((bar, index) => {
+            bar.style.animation = `speakPulse ${0.3 + Math.random() * 0.4}s ease-in-out infinite`;
+            bar.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+    
+    if (!e.target.closest('.eye')) {
+        document.querySelectorAll('.eye').forEach(eye => {
+            eye.classList.remove('hit');
+        });
+        
+        // Reset any disabled mouse following
+        if (mouseFollowEnabled) {
+            document.querySelectorAll('.pupil').forEach(pupil => {
+                pupil.style.animation = 'none';
+            });
+        } else {
+            document.querySelectorAll('.pupil').forEach(pupil => {
+                pupil.style.transform = 'translate(0, 0)';
+                pupil.style.animation = 'lookAround 4s ease-in-out infinite';
+            });
+        }
+    }
+});
+
+// Mouse following toggle
+document.querySelector('#mouse-toggle').addEventListener('click', (e) => {
+    const toggle = document.querySelector('#mouse-toggle');
+    toggle.classList.toggle('active');
+    mouseFollowEnabled = toggle.classList.contains('active');
+    e.stopPropagation();
+    
+    if (!mouseFollowEnabled) {
+        document.querySelectorAll('.pupil').forEach(pupil => {
+            pupil.style.transform = 'translate(0, 0)';
+            pupil.style.animation = 'lookAround 4s ease-in-out infinite';
+        });
+    } else {
+        document.querySelectorAll('.pupil').forEach(pupil => {
+            pupil.style.animation = 'none';
+        });
+    }
+});
+
+// Explore toggle
+document.querySelector('#explore-toggle').addEventListener('click', (e) => {
+    const toggle = document.querySelector('#explore-toggle');
+    toggle.classList.toggle('active');
+    exploringEnabled = toggle.classList.contains('active');
+    document.body.classList.toggle('exploring', exploringEnabled);
+    e.stopPropagation();
+    
+    if (exploringEnabled) {
+        startExploring();
+    } else {
+        stopExploring();
+    }
+});
+
+// Voice control functionality
+function initializeSpeechRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onend = function() {
+            // Automatically restart if still enabled
+            if (voiceEnabled) {
+                recognition.start();
+            }
+        };
+
+        recognition.onresult = function(event) {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim().toLowerCase();
+
+            // Handle different voice commands
+            if (command.includes('look up')) {
+                movePupils(0, -20);
+            } else if (command.includes('look down')) {
+                movePupils(0, 20);
+            } else if (command.includes('look left')) {
+                movePupils(-20, 0);
+            } else if (command.includes('look right')) {
+                movePupils(20, 0);
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            // Restart on error if still enabled
+            if (voiceEnabled && event.error !== 'no-speech') {
+                recognition.start();
+            }
+        };
+    }
+}
+
+function movePupils(x, y) {
+    const pupils = document.querySelectorAll('.pupil');
+    pupils.forEach(pupil => {
+        pupil.style.animation = 'none';
+        pupil.style.transform = `translate(${x}px, ${y}px)`;
+    });
+}
+
+// Voice toggle
+document.querySelector('#voice-toggle').addEventListener('click', (e) => {
+    const toggle = document.querySelector('#voice-toggle');
+    toggle.classList.toggle('active');
+    voiceEnabled = toggle.classList.contains('active');
+    e.stopPropagation();
+    
+    if (voiceEnabled) {
+        if (!recognition) {
+            initializeSpeechRecognition();
+        }
+        recognition.start();
+        // Disable other eye control modes
+        mouseFollowEnabled = false;
+        document.querySelector('#mouse-toggle').classList.remove('active');
+        document.querySelectorAll('.pupil').forEach(pupil => {
+            pupil.style.animation = 'none';
+        });
+    } else {
+        if (recognition) {
+            recognition.stop();
+        }
+        // Reset pupils to default animation
+        document.querySelectorAll('.pupil').forEach(pupil => {
+            pupil.style.transform = 'translate(0, 0)';
+            pupil.style.animation = 'lookAround 4s ease-in-out infinite';
+        });
+    }
+});
+
+// Audio Analysis Setup
+let audioCtx;
+let analyser;
+let dataArray;
+let musicEnabled = false;
+
+// Music toggle
+document.querySelector('#music-toggle').addEventListener('click', async (e) => {
+    const toggle = document.querySelector('#music-toggle');
+    toggle.classList.toggle('active');
+    musicEnabled = toggle.classList.contains('active');
+    e.stopPropagation();
+    
+    if (musicEnabled) {
+        try {
+            // Initialize audio context and analyzer
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            
+            // Get audio input from user's device
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const source = audioCtx.createMediaStreamSource(stream);
+            
+            // Connect source to analyzer
+            source.connect(analyser);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            
+            // Start visualization
+            visualize();
+        } catch (err) {
+            console.error('Error accessing microphone:', err);
+            toggle.classList.remove('active');
+            musicEnabled = false;
+        }
+    } else {
+        if (audioCtx) {
+            audioCtx.close();
+        }
+        // Reset to default color
+        const activeColor = document.querySelector('.color-option.active').dataset.color;
+        document.documentElement.style.setProperty('--robot-color', activeColor);
+    }
+});
+
+function visualize() {
+    if (!musicEnabled) return;
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    // Calculate average frequency
+    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    
+    // Change color based on intensity
+    const hue = (average * 2) % 360;
+    const color = `hsl(${hue}, 100%, 50%)`;
+    document.documentElement.style.setProperty('--robot-color', color);
+    
+    // Adjust speaker bar heights based on frequencies
+    const speakerBars = document.querySelectorAll('.speaker-bar');
+    speakerBars.forEach((bar, index) => {
+        const frequency = dataArray[index * 5];
+        const height = Math.max(15, (frequency / 255) * 45);
+        bar.style.height = `${height}px`;
+    });
+    
+    requestAnimationFrame(visualize);
+}
+
+// Mouse tracking for eyes
+document.addEventListener('mousemove', (e) => {
+    if (!mouseFollowEnabled) return;
+    
+    const pupils = document.querySelectorAll('.pupil');
+    pupils.forEach(pupil => {
+        const eyeRect = pupil.parentElement.getBoundingClientRect();
+        const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+        const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+        
+        const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
+        const radius = 20;
+        
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        pupil.style.transform = `translate(${x}px, ${y}px)`;
+    });
+});
+
+// Dragging functionality
+const robotFace = document.querySelector('.robot-face');
+
+robotFace.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.mouth')) return;
+    isDragging = true;
+    const robotRect = robotFace.getBoundingClientRect();
+    dragOffset.x = e.clientX - robotRect.left;
+    dragOffset.y = e.clientY - robotRect.top;
+    robotFace.style.cursor = 'grabbing';
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    robotFace.style.left = `${e.clientX - dragOffset.x}px`;
+    robotFace.style.top = `${e.clientY - dragOffset.y}px`;
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+    robotFace.style.cursor = 'move';
+});
+
+// Exploring functionality
+let exploreInterval;
+
+function startExploring() {
+    if (exploreInterval) return;
+    
+    exploreInterval = setInterval(() => {
+        const maxX = window.innerWidth - robotFace.offsetWidth;
+        const maxY = window.innerHeight - robotFace.offsetHeight;
+        
+        const newX = Math.random() * maxX;
+        const newY = Math.random() * maxY;
+        
+        robotFace.style.left = `${newX}px`;
+        robotFace.style.top = `${newY}px`;
+    }, 2000);
+}
+
+function stopExploring() {
+    clearInterval(exploreInterval);
+    exploreInterval = null;
+    
+    // Center the face
+    const centerX = (window.innerWidth - robotFace.offsetWidth) / 2;
+    const centerY = (window.innerHeight - robotFace.offsetHeight) / 2;
+    robotFace.style.left = `${centerX}px`;
+    robotFace.style.top = `${centerY}px`;
+}
+
+// Random blinks
+function randomBlink() {
+    const eyes = document.querySelectorAll('.eye');
+    eyes.forEach(eye => {
+        eye.style.animation = 'none';
+        eye.offsetHeight;
+        eye.style.animation = 'blink 4s infinite';
+    });
+    
+    setTimeout(randomBlink, Math.random() * 3000 + 2000);
+}
+
+// Initialize position
+const centerX = (window.innerWidth - robotFace.offsetWidth) / 2;
+const centerY = (window.innerHeight - robotFace.offsetHeight) / 2;
+robotFace.style.left = `${centerX}px`;
+robotFace.style.top = `${centerY}px`;
+
+randomBlink();
+
+// Combat mode toggle
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        combatMode = !combatMode;
+        document.body.classList.toggle('combat-mode', combatMode);
+        crosshair.classList.toggle('active', combatMode);
+    }
+});
+
+// Update crosshair position
+document.addEventListener('mousemove', (e) => {
+    if (!combatMode) return;
+    crosshair.style.left = `${e.clientX - 20}px`;
+    crosshair.style.top = `${e.clientY - 20}px`;
+});
+
+// Create explosion effect
+function createExplosion(x, y) {
+    const explosion = document.createElement('div');
+    explosion.className = 'explosion';
+    explosion.style.left = `${x - 25}px`;
+    explosion.style.top = `${y - 25}px`;
+    
+    // Create SVG explosion
+    explosion.innerHTML = `
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#ff0000" stroke-width="2">
+                <animate attributeName="r" from="0" to="45" dur="0.5s" fill="freeze" />
+                <animate attributeName="opacity" from="1" to="0" dur="0.5s" fill="freeze" />
+            </circle>
+            <path d="M50 5 L50 95 M5 50 L95 50" stroke="#ff0000" stroke-width="2">
+                <animate attributeName="opacity" from="1" to="0" dur="0.5s" fill="freeze" />
+            </path>
+        </svg>
+    `;
+    
+    document.body.appendChild(explosion);
+    setTimeout(() => explosion.remove(), 500);
+}
+
+// Handle eye hits
+document.querySelectorAll('.eye').forEach(eye => {
+    eye.addEventListener('click', (e) => {
+        const rect = eye.getBoundingClientRect();
+        createExplosion(e.clientX, e.clientY);
+        
+        eye.classList.add('hit');
+        
+        // Disable mouse following temporarily
+        const wasMouseFollowing = mouseFollowEnabled;
+        if (mouseFollowEnabled) {
+            document.querySelector('#mouse-toggle').click();
+        }
+    });
+});
+
+// Touch events for mobile
+document.addEventListener('touchstart', (e) => {
+    if (!e.target.closest('.eye')) return;
+    const touch = e.touches[0];
+    createExplosion(touch.clientX, touch.clientY);
+});
+
+// Power toggle functionality
+document.querySelector('#power-toggle').addEventListener('click', (e) => {
+    const toggle = document.querySelector('#power-toggle');
+    toggle.classList.toggle('active');
+    isPowered = toggle.classList.contains('active');
+    robotFace.classList.toggle('powered-off', !isPowered);
+    e.stopPropagation();
+
+    if (isPowered) {
+        speak("Systems online");
+    } else {
+        speak("Powering down");
+    }
+
+    if (!isPowered) {
+        // Disable all other toggles
+        document.querySelectorAll('.toggle:not(#power-toggle)').forEach(toggle => {
+            if (toggle.classList.contains('active')) {
+                toggle.click(); // Simulate click to turn off other features
+            }
+            toggle.style.pointerEvents = 'none';
+            toggle.style.opacity = '0.5';
+        });
+        
+        // Disable color options
+        document.querySelector('.color-options').style.pointerEvents = 'none';
+        document.querySelector('.color-options').style.opacity = '0.5';
+    } else {
+        // Re-enable all toggles
+        document.querySelectorAll('.toggle:not(#power-toggle)').forEach(toggle => {
+            toggle.style.pointerEvents = 'auto';
+            toggle.style.opacity = '1';
+        });
+        
+        // Re-enable color options
+        document.querySelector('.color-options').style.pointerEvents = 'auto';
+        document.querySelector('.color-options').style.opacity = '1';
+    }
+});
+</script>
+</body></html>
