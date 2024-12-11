@@ -1,0 +1,1341 @@
+<html><head><base href="." /><title>Auto AI Chatbot</title><style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background: #1a1a2e;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chat-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background: #16213e;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.chat-header {
+    background: #0f3460;
+    padding: 25px; /* Increased from 20px */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.energy-avatar {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    border-radius: 50%;
+    background: #0f3460;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.energy-core {
+    width: 60%;
+    height: 60%;
+    background: #3498db;
+    border-radius: 50%;
+    position: relative;
+    animation: pulse-core 2s infinite;
+    box-shadow: 0 0 20px #3498db;
+}
+
+.energy-ring {
+    position: absolute;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    animation: rotate-ring 4s linear infinite;
+}
+
+.ring1 { width: 80%; height: 80%; animation-duration: 3s; }
+.ring2 { width: 90%; height: 90%; animation-duration: 5s; }
+.ring3 { width: 100%; height: 100%; animation-duration: 7s; }
+
+.energy-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #3498db;
+    border-radius: 50%;
+    animation: float-particle 3s infinite;
+}
+
+@keyframes pulse-core {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+@keyframes rotate-ring {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float-particle {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(20px, -20px); opacity: 0; }
+}
+
+.camera-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.futuristic-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(16, 24, 48, 0.8) !important;
+    padding: 20px 40px;
+    height: 80px;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-bottom: 2px solid rgba(52, 152, 219, 0.8) !important;
+    box-shadow: 0 0 30px rgba(52, 152, 219, 0.4) !important;
+}
+
+.battery-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Courier New', monospace;
+    color: #3498db;
+    text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    transform: scale(1.2);
+}
+
+.battery-icon {
+    width: 50px;
+    height: 25px;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    position: relative;
+    padding: 2px;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+}
+
+.battery-level {
+    height: 100%;
+    background: #3498db;
+    transition: width 0.3s;
+}
+
+.battery-tip {
+    width: 3px;
+    height: 10px;
+    background: #3498db;
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.compact-auto {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: scale(1.3); /* Increased from 1.2 */
+    background: rgba(52, 152, 219, 0.1);
+    padding: 10px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.compact-auto img {
+    width: 70px;  /* Increased from 50px */
+    height: 70px; /* Increased from 50px */
+    border-radius: 50%;
+    border: 2px solid #3498db;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.show-header {
+    display: flex !important;
+    animation: slideDown 0.5s ease-out;
+}
+
+.chat-messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 80%;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.user-message {
+    background: #e94560;
+    margin-left: auto;
+}
+
+.bot-message {
+    background: #233656;
+}
+
+.input-area {
+    padding: 20px;
+    background: #0f3460;
+    display: flex;
+    gap: 10px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background: #233656;
+    color: #fff;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    background: #e94560;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #d13551;
+}
+
+.controls {
+    margin: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.typing-indicator {
+    padding: 10px;
+    display: none;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #e94560;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: bounce 0.6s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mic-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(233, 69, 96, 0.2);
+    display: none;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+.hud-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+}
+
+.hud-element {
+    position: absolute;
+    border: 2px solid rgba(52, 152, 219, 0.8);
+    background: rgba(16, 24, 48, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    border-radius: 5px;
+    color: #3498db;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 5px rgba(52, 152, 219, 0.4);
+    animation: glowPulse 2s infinite;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+@keyframes glowPulse {
+    0% { box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(52, 152, 219, 0.6); }
+    100% { box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
+}
+
+.scanning-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px !important;
+    background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.8), transparent) !important;
+    box-shadow: 0 0 30px rgba(52, 152, 219, 0.8) !important;
+}
+
+/* Add cool grid overlay */
+.hud-overlay::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(rgba(52, 152, 219, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52, 152, 219, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+}
+
+/* Add corner accents */
+.hud-overlay::after {
+    content: '';
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 100px;
+    height: 100px;
+    border-top: 3px solid rgba(52, 152, 219, 0.8);
+    border-left: 3px solid rgba(52, 152, 219, 0.8);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+}
+
+/* Add more HUD elements */
+.hud-stats {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-item {
+    background: rgba(16, 24, 48, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.8);
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    color: #3498db;
+    text-shadow: 0 0 5px rgba(52, 152, 219, 0.4);
+}
+
+.camera-flip-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(16, 24, 48, 0.8) !important;
+    border: 2px solid rgba(52, 152, 219, 0.8) !important;
+    color: #3498db;
+    padding: 12px 24px !important;
+    border-radius: 5px;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    display: none;
+    z-index: 1000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 12px;
+}
+
+.camera-flip-btn:hover {
+    background: rgba(52, 152, 219, 0.5);
+}
+
+/* Update screensaver styles for a cooler look */
+.screensaver {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #1a1a2e, #16213e);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.time-display {
+    font-size: 6rem;
+    color: #3498db;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+    position: relative;
+    z-index: 2001;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { text-shadow: 0 0 20px rgba(52, 152, 219, 0.8); }
+    50% { text-shadow: 0 0 40px rgba(52, 152, 219, 1); }
+    100% { text-shadow: 0 0 20px rgba(52, 152, 219, 0.8); }
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(52, 152, 219, 0.3);
+    animation: float 15s infinite linear;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.2);
+    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05));
+}
+
+/* New styles for enhancements */
+.radar-effect {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid rgba(52, 152, 219, 0.5);
+    pointer-events: none;
+}
+
+.radar-effect::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(52, 152, 219, 0.5), transparent);
+    transform-origin: left;
+    animation: radarSpin 4s linear infinite;
+}
+
+@keyframes radarSpin {
+    from { transform: rotate(0deg) translate(-50%, -50%); }
+    to { transform: rotate(360deg) translate(-50%, -50%); }
+}
+
+.data-point {
+    position: fixed;
+    background: rgba(52, 152, 219, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.8);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #3498db;
+    font-size: 12px;
+    pointer-events: none;
+    animation: floatData 10s linear infinite;
+}
+
+@keyframes floatData {
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100vh); opacity: 0; }
+}
+
+.system-diagnostics {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: rgba(16, 24, 48, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.8);
+    padding: 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    color: #3498db;
+    backdrop-filter: blur(5px);
+    display: none;
+}
+
+.diagnostic-item {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.diagnostic-bar {
+    width: 100px;
+    height: 4px;
+    background: rgba(52, 152, 219, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.diagnostic-progress {
+    height: 100%;
+    background: #3498db;
+    width: 0%;
+    transition: width 1s ease;
+}
+
+.corner-bracket {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(52, 152, 219, 0.8);
+    pointer-events: none;
+}
+
+.top-left {
+    top: 20px;
+    left: 20px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.top-right {
+    top: 20px;
+    right: 20px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.bottom-left {
+    bottom: 20px;
+    left: 20px;
+    border-right: none;
+    border-top: none;
+}
+
+.bottom-right {
+    bottom: 20px;
+    right: 20px;
+    border-left: none;
+    border-top: none;
+}
+
+/* End of updated styles */
+</style></head><body>
+<div class="futuristic-header" id="futuristicHeader">
+    <div class="battery-status">
+        <div class="battery-icon">
+            <div class="battery-level" id="batteryLevel"></div>
+            <div class="battery-tip"></div>
+        </div>
+        <span id="batteryText">100%</span>
+    </div>
+    <div class="compact-auto">
+        <div class="energy-avatar">
+            <div class="energy-core"></div>
+            <div class="energy-ring ring1"></div>
+            <div class="energy-ring ring2"></div>
+            <div class="energy-ring ring3"></div>
+            <div class="energy-particle" style="top: 20%; left: 20%"></div>
+            <div class="energy-particle" style="top: 60%; left: 70%"></div>
+            <div class="energy-particle" style="top: 40%; left: 40%"></div>
+        </div>
+        <span>Auto AI</span>
+        <div class="status-dot"></div>
+    </div>
+</div>
+
+<video class="camera-background" id="cameraFeed" autoplay playsinline></video>
+<button id="cameraFlipBtn" class="camera-flip-btn">Flip Camera</button>
+<div class="screensaver" id="screensaver">
+    <div class="time-display"></div>
+    <div class="animated-background">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+</div>
+
+<div class="hud-overlay" id="hudOverlay">
+    <div class="scanning-effect"></div>
+    <div class="hud-element" style="top: 20%; left: 20px;">
+        SYSTEM STATUS: ACTIVE
+    </div>
+    <div class="hud-element" style="top: 30%; right: 20px;">
+        VOICE RECOGNITION: ENABLED
+    </div>
+</div>
+
+<div class="mic-indicator" id="micIndicator"></div>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="energy-avatar">
+            <div class="energy-core"></div>
+            <div class="energy-ring ring1"></div>
+            <div class="energy-ring ring2"></div>
+            <div class="energy-ring ring3"></div>
+            <div class="energy-particle" style="top: 20%; left: 20%"></div>
+            <div class="energy-particle" style="top: 60%; left: 70%"></div>
+            <div class="energy-particle" style="top: 40%; left: 40%"></div>
+        </div>
+        <div class="header-text">
+            <h2>Auto AI Assistant</h2>
+            <div class="status-dot"></div>
+        </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <script>
+            // Array of possible greetings
+            const greetings = [
+                "Hi friend! 😊 I'm Auto - so excited to chat with you!",
+                "What's up! 🌟 I'm Auto and I'm here to hang out!",
+                "*waves enthusiastically* 👋 Auto here! Can't wait to chat!",
+                "Yo! 🎉 I'm Auto - let's have some awesome conversations!",
+                "Hi! 💫 Auto here, ready to be the best AI buddy ever!",
+                "Heyyy! 🌈 I'm Auto and I'm super stoked to meet you!"
+            ];
+            
+            // Pick a random greeting
+            const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+            
+            // Add the greeting to the chat
+            document.write(`<div class="message bot-message">${randomGreeting}</div>`);
+        </script>
+    </div>
+    <div class="typing-indicator" id="typingIndicator">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+<div class="controls">
+    <button onclick="toggleAutoTalk()" id="autoTalkBtn">Enable Auto-Talk</button>
+    <button onclick="toggleVoice()" id="voiceBtn">Enable Voice</button>
+</div>
+
+<script>
+let cameraActive = false;
+let waitingForResponse = false;
+let autoTalkEnabled = false;
+let voiceEnabled = false;
+let isMuted = false;
+let isScreensaverActive = false;
+const synth = window.speechSynthesis;
+let voice = null;
+let isListening = false;
+let recognition = null;
+let originalUI = null;
+
+let currentFacingMode = 'user';
+let userMemory = {
+    name: '',
+    facts: []
+};
+
+// Initialize battery status
+async function initBattery() {
+    try {
+        const battery = await navigator.getBattery();
+        updateBatteryStatus(battery);
+        battery.addEventListener('levelchange', () => updateBatteryStatus(battery));
+        battery.addEventListener('chargingchange', () => updateBatteryStatus(battery));
+    } catch (e) {
+        console.error('Battery status not supported');
+        document.getElementById('batteryText').textContent = 'Battery: N/A';
+    }
+}
+
+function updateBatteryStatus(battery) {
+    const level = Math.round(battery.level * 100);
+    const batteryLevel = document.getElementById('batteryLevel');
+    const batteryText = document.getElementById('batteryText');
+    
+    batteryLevel.style.width = `${level}%`;
+    batteryText.textContent = `${level}%`;
+    
+    if (level <= 20) {
+        batteryLevel.style.background = '#e74c3c';
+    } else if (level <= 50) {
+        batteryLevel.style.background = '#f1c40f';
+    } else {
+        batteryLevel.style.background = '#3498db';
+    }
+}
+
+// Initialize voice
+function initVoice() {
+    let voices = synth.getVoices();
+    voice = voices.find(v => v.gender === 'male') || voices[0];
+}
+
+speechSynthesis.onvoiceschanged = initVoice;
+
+function getCurrentTime() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+}
+
+async function getAIResponse(message) {
+    // Handle name learning with friendlier response
+    const nameMatch = message.toLowerCase().match(/my name is (\w+)/);
+    if (nameMatch) {
+        userMemory.name = nameMatch[1];
+        return `Hey ${userMemory.name}! It's awesome to meet you! I'll definitely remember your name.`;
+    }
+
+    // Handle facts about user with friendlier response
+    if (message.toLowerCase().includes('remember that')) {
+        const fact = message.replace(/remember that/i, '').trim();
+        userMemory.facts.push(fact);
+        return `I'll remember that ${fact}! Thanks for sharing that with me!`;
+    }
+
+    const timeKeywords = ['time', 'what time', 'current time'];
+    if (timeKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+        return `It's ${getCurrentTime()} right now! Time flies when we're chatting, doesn't it?`;
+    }
+
+    try {
+        const response = await fetch('/api/ai_completion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: `You are Auto, a helpful and direct AI assistant powered by LLaMA 3.3. You communicate in a clear, professional manner without using emojis or emoticons. When in advanced UI mode, keep responses concise and technical.
+
+                You know the following about the user:
+                Name: ${userMemory.name}
+                Facts: ${userMemory.facts.join(', ')}
+                
+                Guidelines:
+                - Use clear, professional language
+                - Avoid emojis and emoticons in advanced UI mode
+                - Keep responses direct and informative
+                - Reference known facts about the user when relevant
+                - Maintain a helpful but not overly casual tone
+                
+                <typescript-interface>
+                interface Response {
+                    reply: string;
+                }
+                </typescript-interface>
+                
+                <example>
+                {
+                    "reply": "Based on our previous discussions about your interests in technology, I believe this would be an effective approach. Would you like me to elaborate further?"
+                }
+                </example>`,
+                model: "llama-3.3",
+                data: message
+            }),
+        });
+        const data = await response.json();
+        return data.reply;
+    } catch (error) {
+        console.error('Error:', error);
+        return "I apologize, but I'm experiencing a connection issue. Please try your request again.";
+    }
+}
+
+function speak(text) {
+    if (document.getElementById('futuristicHeader').style.display === 'flex' || voiceEnabled) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.voice = voice;
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        synth.speak(utterance);
+    }
+}
+
+function showTypingIndicator() {
+    document.getElementById('typingIndicator').style.display = 'block';
+}
+
+function hideTypingIndicator() {
+    document.getElementById('typingIndicator').style.display = 'none';
+}
+
+function addMessage(message, isUser = false) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    messageDiv.textContent = message;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function simulateTyping(message) {
+    showTypingIndicator();
+    let displayText = '';
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot-message';
+    document.getElementById('chatMessages').appendChild(messageDiv);
+
+    for (let i = 0; i < message.length; i++) {
+        if (!autoTalkEnabled) {
+            messageDiv.textContent = message;
+            break;
+        }
+        displayText += message[i];
+        messageDiv.textContent = displayText;
+        await new Promise(resolve => setTimeout(resolve, 30));
+    }
+    hideTypingIndicator();
+    
+    if (voiceEnabled) {
+        speak(message);
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    
+    if (message) {
+        // Check for command:ui
+        if (message.toLowerCase() === 'command:ui') {
+            addMessage(message, true);
+            input.value = '';
+            showTypingIndicator();
+            const response = await handleUICommand();
+            hideTypingIndicator();
+            addMessage(response);
+            return;
+        }
+
+        addMessage(message, true);
+        input.value = '';
+        
+        showTypingIndicator();
+        const response = await getAIResponse(message);
+        hideTypingIndicator();
+        
+        if (autoTalkEnabled) {
+            await simulateTyping(response);
+        } else {
+            addMessage(response);
+            if (voiceEnabled && !isMuted && !isScreensaverActive) {
+                speak(response);
+            }
+        }
+    }
+}
+
+function toggleAutoTalk() {
+    autoTalkEnabled = !autoTalkEnabled;
+    document.getElementById('autoTalkBtn').textContent = 
+        autoTalkEnabled ? 'Disable Auto-Talk' : 'Enable Auto-Talk';
+}
+
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    document.getElementById('voiceBtn').textContent = 
+        voiceEnabled ? 'Disable Voice' : 'Enable Voice';
+}
+
+document.getElementById('userInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Initialize speech recognition
+function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        
+        recognition.onstart = () => {
+            document.getElementById('micIndicator').style.display = 'block';
+        };
+        
+        recognition.onresult = async (event) => {
+            // Check if there are any results before accessing them
+            if (!event.results || !event.results.length) {
+                console.error('No speech recognition results available');
+                return;
+            }
+
+            try {
+                const lastResult = event.results[event.results.length - 1];
+                if (!lastResult || !lastResult[0]) {
+                    console.error('Invalid speech recognition result format');
+                    return;
+                }
+
+                const transcript = lastResult[0].transcript.toLowerCase().trim();
+                
+                if (!transcript) {
+                    console.error('Empty transcript received');
+                    return;
+                }
+
+                // Visual analysis command
+                if (transcript.includes('what is this') || transcript.includes("what's this")) {
+                    try {
+                        document.getElementById('micIndicator').style.display = 'block';
+                        addMessage(transcript, true);
+                        
+                        const scanningEffect = document.querySelector('.scanning-effect');
+                        if (scanningEffect) {
+                            scanningEffect.style.display = 'block';
+                        }
+                        
+                        addMessage("Analyzing visual input...", false);
+                        
+                        const imageData = await captureFrame();
+                        if (!imageData) {
+                            throw new Error('Failed to capture camera frame');
+                        }
+                        
+                        const analysis = await analyzeImage(imageData);
+                        
+                        if (scanningEffect) {
+                            scanningEffect.style.display = 'none';
+                        }
+                        
+                        const response = `I detect that this is ${analysis}.`;
+                        addMessage(response);
+                        if (!isMuted && !isScreensaverActive) {
+                            speak(response);
+                        }
+                        return;
+                    } catch (error) {
+                        console.error('Error during visual analysis:', error);
+                        addMessage("I'm having trouble analyzing what I see right now. Please try again.");
+                        return;
+                    }
+                }
+                
+                // Handle other voice commands
+                switch(transcript) {
+                    case 'command done':
+                        restoreOriginalUI();
+                        return;
+                    case 'mute':
+                        isMuted = true;
+                        addMessage("Voice output disabled. Say 'unmute' to reactivate.");
+                        return;
+                    case 'unmute':
+                        isMuted = false;
+                        addMessage("Voice output reactivated.");
+                        speak("Voice communication restored.");
+                        return;
+                    case 'off':
+                    case 'power off':
+                        toggleScreensaver(true);
+                        return;
+                    case 'on':
+                    case 'power on':
+                    case 'turn on':
+                        toggleScreensaver(false);
+                        return;
+                }
+                
+                // Handle regular conversation
+                try {
+                    document.getElementById('micIndicator').style.display = 'block';
+                    addMessage(transcript, true);
+                    
+                    waitingForResponse = true;
+                    showTypingIndicator();
+                    
+                    const header = document.getElementById('futuristicHeader');
+                    let response;
+                    if (header && header.classList.contains('show-header')) {
+                        response = (await getAIResponse(transcript)).replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+                    } else {
+                        response = await getAIResponse(transcript);
+                    }
+                    
+                    hideTypingIndicator();
+                    addMessage(response);
+                    
+                    if (!isMuted && !isScreensaverActive) {
+                        speak(response);
+                    }
+                    
+                    const utterance = new SpeechSynthesisUtterance(response);
+                    utterance.onend = () => {
+                        waitingForResponse = false;
+                        if (isListening) {
+                            recognition.start();
+                        }
+                    };
+                    
+                    if (!isMuted && !isScreensaverActive) {
+                        synth.speak(utterance);
+                    }
+                } catch (error) {
+                    console.error('Error processing speech input:', error);
+                    addMessage("I'm having trouble processing that. Could you try again?");
+                }
+            } catch (error) {
+                console.error('Speech recognition error:', error);
+                addMessage("I had trouble understanding that. Could you try again?");
+            }
+        };
+        
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            if (event.error === 'not-allowed') {
+                alert('Please enable microphone access to use voice commands.');
+            }
+        };
+        
+        recognition.onend = () => {
+            if (isListening && !waitingForResponse) {
+                recognition.start();
+            } else {
+                document.getElementById('micIndicator').style.display = 'none';
+            }
+        };
+    } else {
+        alert('Speech recognition is not supported in this browser.');
+    }
+}
+
+// Function to capture current frame from camera
+async function captureFrame() {
+    const video = document.getElementById('cameraFeed');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    return canvas.toDataURL('image/jpeg');
+}
+
+// Function to analyze image with Vision API
+async function analyzeImage(imageData) {
+    try {
+        const response = await fetch('/api/analyze-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image: imageData })
+        });
+        const data = await response.json();
+        return data.description;
+    } catch (error) {
+        console.error('Vision API error:', error);
+        return "Sorry, I'm having trouble analyzing what I'm seeing right now. 😅";
+    }
+}
+
+function restoreOriginalUI() {
+    if (originalUI) {
+        // Restore chat container and controls
+        document.querySelector('.chat-container').style.display = 'block';
+        document.querySelector('.controls').style.display = 'block';
+        document.querySelector('.chat-container').innerHTML = originalUI.container;
+
+        // Hide futuristic UI elements
+        const header = document.getElementById('futuristicHeader');
+        header.classList.remove('show-header');
+        header.style.display = originalUI.headerDisplay;
+        
+        document.getElementById('hudOverlay').style.display = 'none';
+        document.getElementById('cameraFeed').style.display = 'none';
+        document.querySelector('.scanning-effect').style.display = 'none';
+        document.getElementById('cameraFlipBtn').style.display = 'none';
+
+        // Stop camera if active
+        if (cameraActive) {
+            const videoElement = document.getElementById('cameraFeed');
+            const stream = videoElement.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            cameraActive = false;
+        }
+
+        // Stop voice recognition
+        if (recognition) {
+            recognition.stop();
+            isListening = false;
+        }
+
+        // Reset voice settings
+        voiceEnabled = false;
+        isMuted = false;
+
+        // Remove event listener
+        document.body.removeEventListener('click', stopSpeaking);
+
+        // Clear original UI storage
+        originalUI = null;
+
+        speak("Returning to standard interface mode.");
+    }
+}
+
+// Update the existing code that references restoreOriginalUI
+const existingRestoreOriginalUI = restoreOriginalUI;
+restoreOriginalUI = function() {
+    existingRestoreOriginalUI.apply(this, arguments);
+    
+    // Clean up all enhanced UI elements
+    document.querySelectorAll('.radar-effect, .corner-bracket, .system-diagnostics, .data-point').forEach(el => el.remove());
+    
+    // Additional cleanup specific to the cool UI features
+    clearInterval(updateSystemDiagnostics);
+    const diagnostics = document.querySelector('.system-diagnostics');
+    if (diagnostics) {
+        diagnostics.remove();
+    }
+    
+    // Remove any remaining data points
+    document.querySelectorAll('.data-point').forEach(point => point.remove());
+    
+    // Clear any running intervals
+    if (window.dataPointInterval) {
+        clearInterval(window.dataPointInterval);
+    }
+    if (window.diagnosticsInterval) {
+        clearInterval(window.diagnosticsInterval);
+    }
+};
+
+// Handle UI command for futuristic mode
+async function handleUICommand() {
+    if (!originalUI) {
+        originalUI = {
+            headerDisplay: document.getElementById('futuristicHeader').style.display,
+            container: document.querySelector('.chat-container').innerHTML
+        };
+    }
+    
+    const header = document.getElementById('futuristicHeader');
+    header.classList.add('show-header');
+    await initBattery();
+    await initCamera();
+    
+    document.getElementById('hudOverlay').style.display = 'block';
+    document.getElementById('cameraFeed').style.display = 'block';
+    document.querySelector('.scanning-effect').style.display = 'block';
+    
+    // Add radar effect
+    const radar = document.createElement('div');
+    radar.className = 'radar-effect';
+    document.body.appendChild(radar);
+    
+    // Add corner brackets
+    ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(pos => {
+        const bracket = document.createElement('div');
+        bracket.className = `corner-bracket ${pos}`;
+        document.body.appendChild(bracket);
+    });
+    
+    // Add system diagnostics
+    const diagnostics = document.createElement('div');
+    diagnostics.className = 'system-diagnostics';
+    diagnostics.innerHTML = `
+        <div class="diagnostic-item" data-diagnostic="SYSTEM LOAD">
+            <span>SYSTEM LOAD:</span>
+            <div class="diagnostic-bar"><div class="diagnostic-progress"></div></div>
+        </div>
+        <div class="diagnostic-item" data-diagnostic="MEMORY USAGE">
+            <span>MEMORY USAGE:</span>
+            <div class="diagnostic-bar"><div class="diagnostic-progress"></div></div>
+        </div>
+        <div class="diagnostic-item" data-diagnostic="NETWORK STATUS">
+            <span>NETWORK STATUS:</span>
+            <div class="diagnostic-bar"><div class="diagnostic-progress"></div></div>
+        </div>
+        <div class="diagnostic-item" data-diagnostic="AI CORE TEMP">
+            <span>AI CORE TEMP:</span>
+            <div class="diagnostic-bar"><div class="diagnostic-progress"></div></div>
+        </div>
+    `;
+    document.body.appendChild(diagnostics);
+    diagnostics.style.display = 'block';
+    
+    // Start the enhanced UI features
+    createDataPoints();
+    setInterval(updateSystemDiagnostics, 2000);
+    
+    isListening = true;
+    voiceEnabled = true; 
+    if (recognition) {
+        recognition.start();
+    } else {
+        initSpeechRecognition();
+        recognition.start();
+    }
+    
+    document.querySelector('.chat-container').style.display = 'none';
+    document.querySelector('.controls').style.display = 'none';
+    
+    document.body.addEventListener('click', stopSpeaking);
+    
+    const response = "Switching to advanced interface mode. Voice commands are now active. Tap anywhere to pause speech. Say 'command done' to return to standard mode.";
+    speak(response);
+    
+    document.getElementById('cameraFlipBtn').style.display = 'block';
+    return response;
+}
+
+// Start creating data points
+function createDataPoints() {
+    setInterval(() => {
+        const dataPoint = document.createElement('div');
+        dataPoint.className = 'data-point';
+        dataPoint.textContent = [
+            'ANALYZING INPUT...',
+            'PROCESSING DATA...',
+            'SCANNING ENVIRONMENT...',
+            'UPDATING METRICS...',
+            'SYNCING SYSTEMS...'
+        ][Math.floor(Math.random() * 5)];
+        
+        dataPoint.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+        document.body.appendChild(dataPoint);
+        
+        setTimeout(() => dataPoint.remove(), 10000);
+    }, 3000);
+}
+
+// Update system diagnostics
+function updateSystemDiagnostics() {
+    const diagnostics = {
+        'SYSTEM LOAD': Math.random() * 100,
+        'MEMORY USAGE': Math.random() * 100,
+        'NETWORK STATUS': Math.random() * 100,
+        'AI CORE TEMP': Math.random() * 100
+    };
+
+    Object.entries(diagnostics).forEach(([key, value]) => {
+        const el = document.querySelector(`[data-diagnostic="${key}"] .diagnostic-progress`);
+        if (el) el.style.width = `${value}%`;
+    });
+}
+
+// Initialize camera
+async function initCamera(facingMode = 'user') {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: facingMode }
+        });
+        const videoElement = document.getElementById('cameraFeed');
+        videoElement.srcObject = stream;
+        cameraActive = true;
+        currentFacingMode = facingMode;
+    } catch (error) {
+        console.error('Camera access error:', error);
+        alert('Camera access is required for the advanced UI mode');
+    }
+}
+
+// Add function to flip camera
+async function flipCamera() {
+    if (cameraActive) {
+        const videoElement = document.getElementById('cameraFeed');
+        const stream = videoElement.srcObject;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        await initCamera(newFacingMode);
+    }
+}
+
+// Add event listener for camera flip button
+document.getElementById('cameraFlipBtn').addEventListener('click', flipCamera);
+
+// Add function to stop speaking
+function stopSpeaking() {
+    if (synth.speaking) {
+        synth.cancel();
+    }
+}
+
+// Update screensaver time
+function updateScreensaverTime() {
+    const timeDisplay = document.querySelector('.time-display');
+    timeDisplay.textContent = getCurrentTime();
+}
+
+// Handle screensaver
+function toggleScreensaver(show) {
+    const screensaver = document.getElementById('screensaver');
+    if (show) {
+        screensaver.style.display = 'flex';
+        isScreensaverActive = true;
+        speak("System entering standby mode. Say 'power on' to reactivate.");
+    } else {
+        screensaver.style.display = 'none';
+        isScreensaverActive = false;
+        speak("System reactivated.");
+    }
+}
+
+// Initialize everything when the page loads
+window.addEventListener('load', () => {
+    initVoice();
+    initSpeechRecognition();
+});
+</script></body></html>
